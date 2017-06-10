@@ -1,4 +1,4 @@
-package me.lzxz1234.wxbot.event.system;
+package me.lzxz1234.wxbot.event.active;
 
 import me.lzxz1234.wxbot.event.Event;
 

@@ -12,8 +12,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
-import me.lzxz1234.wxbot.event.ApplyUserAddEvent;
 import me.lzxz1234.wxbot.event.Event;
+import me.lzxz1234.wxbot.event.active.ApplyUserAddEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 import me.lzxz1234.wxbot.vo.RecommendInfo;
 

@@ -1,5 +1,6 @@
-package me.lzxz1234.wxbot.event;
+package me.lzxz1234.wxbot.event.active;
 
+import me.lzxz1234.wxbot.event.Event;
 import me.lzxz1234.wxbot.vo.RecommendInfo;
 
 public class ApplyUserAddEvent extends Event {

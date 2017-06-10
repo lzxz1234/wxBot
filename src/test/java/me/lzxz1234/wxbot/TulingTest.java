@@ -29,8 +29,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
+import me.lzxz1234.wxbot.event.active.SendMsgByUidEvent;
 import me.lzxz1234.wxbot.event.message.ContactMessageEvent;
-import me.lzxz1234.wxbot.event.system.SendMsgByUidEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 import sun.misc.BASE64Encoder;
 

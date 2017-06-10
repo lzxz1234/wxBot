@@ -1,4 +1,6 @@
-package me.lzxz1234.wxbot.event;
+package me.lzxz1234.wxbot.event.active;
+
+import me.lzxz1234.wxbot.event.Event;
 
 public class SendMsgEvent extends Event {
 
