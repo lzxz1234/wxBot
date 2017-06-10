@@ -18,7 +18,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 
-import com.alibaba.fastjson.JSON;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
@@ -29,17 +28,17 @@ import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.ApplyUserAddEvent;
 import me.lzxz1234.wxbot.event.BatchEvent;
 import me.lzxz1234.wxbot.event.Event;
-import me.lzxz1234.wxbot.event.GetContactEvent;
-import me.lzxz1234.wxbot.event.HandleMsgEvent;
-import me.lzxz1234.wxbot.event.InitEvent;
-import me.lzxz1234.wxbot.event.LoginEvent;
-import me.lzxz1234.wxbot.event.NewEvent;
-import me.lzxz1234.wxbot.event.ProcMsgEvent;
-import me.lzxz1234.wxbot.event.SendMsgByUidEvent;
 import me.lzxz1234.wxbot.event.SendMsgEvent;
 import me.lzxz1234.wxbot.event.SetRemarkNameEvent;
-import me.lzxz1234.wxbot.event.StatusNotifyEvent;
-import me.lzxz1234.wxbot.event.Wait4LoginEvent;
+import me.lzxz1234.wxbot.event.system.GetContactEvent;
+import me.lzxz1234.wxbot.event.system.HandleMsgEvent;
+import me.lzxz1234.wxbot.event.system.InitEvent;
+import me.lzxz1234.wxbot.event.system.LoginEvent;
+import me.lzxz1234.wxbot.event.system.NewEvent;
+import me.lzxz1234.wxbot.event.system.ProcMsgEvent;
+import me.lzxz1234.wxbot.event.system.SendMsgByUidEvent;
+import me.lzxz1234.wxbot.event.system.StatusNotifyEvent;
+import me.lzxz1234.wxbot.event.system.Wait4LoginEvent;
 import me.lzxz1234.wxbot.store.MemoryStore;
 import me.lzxz1234.wxbot.store.Store;
 import me.lzxz1234.wxbot.task.EventListener;
@@ -81,6 +80,7 @@ public class WXUtils {
         registEventListener(Wait4LoginEvent.class, Wait4Login.class);
         registEventListener(BatchEvent.class, Batch.class);
         
+        System.setProperty ("jsse.enableSNIExtension", "false");
     }
     public static synchronized <T extends Event> void registEventListener(Class<T> event, Class<? extends EventListener<T>> listener) {
         
@@ -177,8 +177,6 @@ public class WXUtils {
         @Override
         public void run() {
             
-            if(!e.getClass().equals(ProcMsgEvent.class))
-                Logger.getLogger("flume").info(JSON.toJSONString(e));
             Class<?>[] classes = map.get(e.getClass());
             if(classes == null || classes.length == 0) {
                 log.warn("类型 " + e.getClass() + " 未注册处理类");

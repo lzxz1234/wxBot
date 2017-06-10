@@ -17,13 +17,20 @@ import com.alibaba.fastjson.JSONObject;
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.BatchEvent;
 import me.lzxz1234.wxbot.event.Event;
-import me.lzxz1234.wxbot.event.HandleMsgAllEvent;
-import me.lzxz1234.wxbot.event.HandleMsgEvent;
+import me.lzxz1234.wxbot.event.message.ContactMessageEvent;
+import me.lzxz1234.wxbot.event.message.ContentMessageEvent;
+import me.lzxz1234.wxbot.event.message.FileHelperMessageEvent;
+import me.lzxz1234.wxbot.event.message.GroupMessageEvent;
+import me.lzxz1234.wxbot.event.message.MessageEvent;
+import me.lzxz1234.wxbot.event.message.PublicMessageEvent;
+import me.lzxz1234.wxbot.event.message.SelfMessageEvent;
+import me.lzxz1234.wxbot.event.message.SpecialMessageEvent;
+import me.lzxz1234.wxbot.event.message.UserAddEvent;
+import me.lzxz1234.wxbot.event.system.HandleMsgEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 import me.lzxz1234.wxbot.utils.HtmlUtils;
 import me.lzxz1234.wxbot.vo.Content;
 import me.lzxz1234.wxbot.vo.Info;
-import me.lzxz1234.wxbot.vo.Message;
 import me.lzxz1234.wxbot.vo.RecommendInfo;
 import me.lzxz1234.wxbot.vo.ShareData;
 import me.lzxz1234.wxbot.vo.User;
@@ -37,88 +44,75 @@ public class HandleMsg extends EventListener<HandleMsgEvent> {
         List<Event> result = new ArrayList<Event>();
         JSONArray msgList = e.getRawMsg().getJSONArray("AddMsgList");
         for(int i = 0; i < msgList.size(); i ++) {
+            MessageEvent event;
             JSONObject msg = msgList.getJSONObject(i);
             String fromUid = msg.getString("FromUserName");
+            String content = HtmlUtils.htmlUnescape(msg.getString("Content"));
             
-            User user = new User();
-            Message realMsg = new Message();
-            user.setId(fromUid);
-            if(msg.getIntValue("MsgType") == 51 && msg.getIntValue("StatusNotifyCode") == 4) { // init message
+            if(msg.getIntValue("MsgType") == 37) { // 好友请求
                 
-                realMsg.setMsgTypeId(0);
-                user.setName("system");
-            } else if(msg.getIntValue("MsgType") == 37) { // 好友请求
-                
-                realMsg.setMsgTypeId(37);
+                event = new UserAddEvent(context.getUuid());
+                ((UserAddEvent)event).setRecommendInfo(msg.getObject("RecommendInfo", RecommendInfo.class));
             } else if(fromUid.equals(context.getMyAccount().getUserName())) { // Self
                 
-                realMsg.setMsgTypeId(1);
-                user.setName("self");
+                event = new SelfMessageEvent(context.getUuid());
+                event.getUser().setName("self");
             } else if(msg.getString("ToUserName").equals("filehelper")) { // File Helper
                 
-                realMsg.setMsgTypeId(2);
-                user.setName("file_helper");
+                event = new FileHelperMessageEvent(context.getUuid());
+                ((FileHelperMessageEvent)event).setData(content.replace("<br/>", "\n"));
+                event.getUser().setName("file_helper");
             } else if(fromUid.startsWith("@@")) { // Group
                 
-                realMsg.setMsgTypeId(3);
-                user.setName(this.getContactPreferName(this.getContactName(context, user.getId())));
+                event = new GroupMessageEvent(context.getUuid());
+                int spIndex = content.indexOf("<br/>");
+                String uid = content.substring(0, spIndex);
+                content = content.substring(spIndex);;
+                content = content.replace("<br/>", "");
+                uid = uid.substring(0, uid.length() - 1);
+                String name = this.getContactPreferName(this.getContactName(context, uid));
+                if(StringUtils.isEmpty(name))
+                    name = this.getGroupMemberPreferName(this.getGroupMemberName(context, msg.getString("FromUserName"), uid));
+                if(StringUtils.isEmpty(name))
+                    name = "unknown";
+                ((GroupMessageEvent)event).setAtUser(new User(uid, name));
+                event.getUser().setName(this.getContactPreferName(this.getContactName(context, fromUid)));
             } else if(this.isContact(context, fromUid)) { // Contact
                 
-                realMsg.setMsgTypeId(4);
-                user.setName(this.getContactPreferName(this.getContactName(context, user.getId())));
+                event = new ContactMessageEvent(context.getUuid());
+                event.getUser().setName(this.getContactPreferName(this.getContactName(context, fromUid)));
             } else if(this.isPublic(context, fromUid)) { // Public
                 
-                realMsg.setMsgTypeId(5);
-                user.setName(this.getContactPreferName(this.getContactName(context, user.getId())));
+                event = new PublicMessageEvent(context.getUuid());
+                event.getUser().setName(this.getContactPreferName(this.getContactName(context, fromUid)));
             } else if(this.isSpecial(context, fromUid)) { // Special
                 
-                realMsg.setMsgTypeId(6);
-                user.setName(this.getContactPreferName(this.getContactName(context, user.getId())));
+                event = new SpecialMessageEvent(context.getUuid());
+                event.getUser().setName(this.getContactPreferName(this.getContactName(context, fromUid)));
             } else {
-                realMsg.setMsgTypeId(99);
-                user.setName("unknown");
+                log.warn("[UnknownMessage] " + e.getRawMsg().toJSONString());
+                continue;
             }
-            if(StringUtils.isEmpty(user.getName())) user.setName("unknown");
-            user.setName(HtmlUtils.htmlUnescape(user.getName()));
+            if(StringUtils.isEmpty(event.getUser().getName())) event.getUser().setName("unknown");
+            event.getUser().setName(HtmlUtils.htmlUnescape(event.getUser().getName()));
+            event.getUser().setId(fromUid);
+            event.setMsgId(msg.getString("MsgId"));
+            event.setToUserId(msg.getString("ToUserName"));
             
-            realMsg.setMsgId(msg.getString("MsgId"));
-            realMsg.setToUserId(msg.getString("ToUserName"));
-            realMsg.setUser(user);
-            realMsg.setContent(this.extractMsgContent(context, realMsg.getMsgTypeId(), msg));
-            
-            result.add(new HandleMsgAllEvent(e.getUuid(), realMsg));
+            if(event instanceof ContentMessageEvent) 
+                ((ContentMessageEvent)event).setContent(this.extractMsgContent(context, msg));
+            result.add(event);
         }
         return new BatchEvent(context.getUuid(), result.toArray(new Event[0]));
     }
 
-    private Content extractMsgContent(WXHttpClientContext context, int msgTypeId, JSONObject msg) throws Exception {
+    private Content extractMsgContent(WXHttpClientContext context, JSONObject msg) throws Exception {
         
         String uuid = context.getUuid();
         Content result = new Content();
         int mType = msg.getIntValue("MsgType");
         String msgId = msg.getString("MsgId");
         String content = HtmlUtils.htmlUnescape(msg.getString("Content"));
-        if(msgTypeId == 0) {
-            result.setType(11);
-            result.setData("");
-            return result;
-        } else if(msgTypeId == 2) { // File Helper
-            result.setType(0);
-            result.setData(content.replace("<br/>", "\n"));
-            return result;
-        } else if(msgTypeId == 3) { // 群聊
-            int spIndex = content.indexOf("<br/>");
-            String uid = content.substring(0, spIndex);
-            content = content.substring(spIndex);;
-            content = content.replace("<br/>", "");
-            uid = uid.substring(0, uid.length() - 1);
-            String name = this.getContactPreferName(this.getContactName(context, uid));
-            if(StringUtils.isEmpty(name))
-                name = this.getGroupMemberPreferName(this.getGroupMemberName(context, msg.getString("FromUserName"), uid));
-            if(StringUtils.isEmpty(name))
-                name = "unknown";
-            result.setUser(new User(uid, name));
-        }
         
         if(mType == 1) {
             if(content.indexOf("http://weixin.qq.com/cgi-bin/redirectforward?args=") != -1) {
@@ -135,7 +129,8 @@ public class HandleMsg extends EventListener<HandleMsgEvent> {
                 }
             } else {
                 result.setType(0);
-                if(msgTypeId == 3 || (msgTypeId == 1 && msg.getString("ToUserName").startsWith("@@")) ) { // Group Text Message
+                if(msg.getString("FromUserName").startsWith("@@") 
+                        || (msg.getString("FromUserName").equals(context.getMyAccount().getUserName()) && msg.getString("ToUserName").startsWith("@@")) ) { // Group Text Message
                     Object[] msgInfos = this.procAtInfo(content);
                     result.setData(msgInfos[0].toString());
                     result.setDetail(msgInfos[2]);
@@ -157,10 +152,6 @@ public class HandleMsg extends EventListener<HandleMsgEvent> {
             // TODO 是否需要下载音频
             // msg_content['voice'] = self.session.get(msg_content['data']).content.encode('hex')
             log.debug(uuid + " [Voice] " + result.getData());
-        } else if(mType == 37) { // 好友确认消息
-            result.setType(37);
-            result.setRecommendInfo(msg.getObject("RecommendInfo", RecommendInfo.class));
-            log.debug(uuid + " [UserAdd] " + result.getRecommendInfo().getNickName());
         } else if(mType == 42) { // 共享名片
             result.setType(5);
             result.setRecommendInfo(msg.getObject("RecommendInfo", RecommendInfo.class));

@@ -12,8 +12,8 @@ import org.apache.http.client.utils.URIBuilder;
 import me.lzxz1234.wxbot.WXUtils;
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
-import me.lzxz1234.wxbot.event.LoginEvent;
-import me.lzxz1234.wxbot.event.Wait4LoginEvent;
+import me.lzxz1234.wxbot.event.system.LoginEvent;
+import me.lzxz1234.wxbot.event.system.Wait4LoginEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 import me.lzxz1234.wxbot.utils.Lang;
 

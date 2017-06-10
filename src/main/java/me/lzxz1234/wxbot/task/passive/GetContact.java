@@ -20,7 +20,7 @@ import me.lzxz1234.wxbot.WXUtils;
 import me.lzxz1234.wxbot.context.WXContactInfo;
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
-import me.lzxz1234.wxbot.event.GetContactEvent;
+import me.lzxz1234.wxbot.event.system.GetContactEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 
 public class GetContact extends EventListener<GetContactEvent> {

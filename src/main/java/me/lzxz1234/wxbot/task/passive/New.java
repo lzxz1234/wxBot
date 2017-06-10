@@ -4,8 +4,8 @@ import org.apache.commons.lang.RandomStringUtils;
 
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
-import me.lzxz1234.wxbot.event.NewEvent;
-import me.lzxz1234.wxbot.event.Wait4LoginEvent;
+import me.lzxz1234.wxbot.event.system.NewEvent;
+import me.lzxz1234.wxbot.event.system.Wait4LoginEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 
 

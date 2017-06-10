@@ -15,7 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
-import me.lzxz1234.wxbot.event.StatusNotifyEvent;
+import me.lzxz1234.wxbot.event.system.StatusNotifyEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 
 public class StatusNotify extends EventListener<StatusNotifyEvent> {

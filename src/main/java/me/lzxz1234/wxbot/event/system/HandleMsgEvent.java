@@ -1,6 +1,8 @@
-package me.lzxz1234.wxbot.event;
+package me.lzxz1234.wxbot.event.system;
 
 import com.alibaba.fastjson.JSONObject;
+
+import me.lzxz1234.wxbot.event.Event;
 
 public class HandleMsgEvent extends Event {
 

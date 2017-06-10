@@ -77,7 +77,7 @@ public abstract class EventListener<T extends Event> {
     
     public Name getGroupMemberName(WXHttpClientContext context, String gid, String uid) {
         
-        JSONArray group = WXUtils.getContact(uid).getGroupMembers().getJSONArray(gid);
+        JSONArray group = WXUtils.getContact(context.getUuid()).getGroupMembers().getJSONArray(gid);
         if(group == null) return null;
         for(int i = 0; i < group.size(); i ++) {
             JSONObject member = group.getJSONObject(i);
@@ -106,12 +106,12 @@ public abstract class EventListener<T extends Event> {
     
     public JSONObject getContactInfo(WXHttpClientContext context, String uid) {
         
-        return WXUtils.getContact(uid).getNormalMember().getJSONObject(uid);
+        return WXUtils.getContact(context.getUuid()).getNormalMember().getJSONObject(uid);
     }
     
     public boolean isContact(WXHttpClientContext context, String uid) {
         
-        for(JSONObject each : WXUtils.getContact(uid).getContactList()) 
+        for(JSONObject each : WXUtils.getContact(context.getUuid()).getContactList()) 
             if(uid.equals(each.getString("UserName")))
                 return true;
         return false;
@@ -119,7 +119,7 @@ public abstract class EventListener<T extends Event> {
     
     public boolean isPublic(WXHttpClientContext context, String uid) {
         
-        for(JSONObject each : WXUtils.getContact(uid).getPublicList()) 
+        for(JSONObject each : WXUtils.getContact(context.getUuid()).getPublicList()) 
             if(uid.equals(each.getString("UserName")))
                 return true;
         return false;
@@ -127,7 +127,7 @@ public abstract class EventListener<T extends Event> {
     
     public boolean isSpecial(WXHttpClientContext context, String uid) {
         
-        for(JSONObject each : WXUtils.getContact(uid).getSpecialList()) 
+        for(JSONObject each : WXUtils.getContact(context.getUuid()).getSpecialList()) 
             if(uid.equals(each.getString("UserName")))
                 return true;
         return false;

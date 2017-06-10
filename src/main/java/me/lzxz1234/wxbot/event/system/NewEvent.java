@@ -1,6 +1,8 @@
-package me.lzxz1234.wxbot.event;
+package me.lzxz1234.wxbot.event.system;
 
 import java.util.Map;
+
+import me.lzxz1234.wxbot.event.Event;
 
 public class NewEvent extends Event {
 

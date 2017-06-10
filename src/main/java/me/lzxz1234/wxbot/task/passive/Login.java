@@ -16,8 +16,8 @@ import org.xml.sax.InputSource;
 
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
-import me.lzxz1234.wxbot.event.InitEvent;
-import me.lzxz1234.wxbot.event.LoginEvent;
+import me.lzxz1234.wxbot.event.system.InitEvent;
+import me.lzxz1234.wxbot.event.system.LoginEvent;
 import me.lzxz1234.wxbot.task.EventListener;
 
 
