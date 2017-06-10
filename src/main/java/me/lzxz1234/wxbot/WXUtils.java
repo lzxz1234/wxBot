@@ -82,12 +82,14 @@ public class WXUtils {
         
         System.setProperty ("jsse.enableSNIExtension", "false");
     }
+    
     public static synchronized <T extends Event> void registEventListener(Class<T> event, Class<? extends EventListener<T>> listener) {
         
         if(!map.contains(event)) map.put(event, new Class<?>[0]);
         List<Class<?>> list = new ArrayList<Class<?>>(Arrays.asList(map.get(event)));
         list.add(listener);
         map.put(event, list.toArray(new Class<?>[0]));
+        log.info(String.format("监听注册 %s ==> %s", event, listener));
     }
 
     public static String genUUID(Map<String, Object> otherInfo) throws Exception {
@@ -177,25 +179,25 @@ public class WXUtils {
         @Override
         public void run() {
             
-            Class<?>[] classes = map.get(e.getClass());
-            if(classes == null || classes.length == 0) {
-                log.warn("类型 " + e.getClass() + " 未注册处理类");
-            } else {
-                this.runAll(classes);
-            }
+            Class<?> cur = e.getClass();
+            do {
+                this.runAll(map.get(cur));
+                cur = cur.getSuperclass();
+            } while(!cur.equals(Object.class));
         }
         
         private void runAll(Class<?>[] classes) {
             
-            for(Class<?> tmp : classes) {
-                try {
-                    EventListener<T> listener = Lang.newInstance(tmp);
-                    Event result = listener.handleEvent(e);
-                    if(result != null) new EventHandler<Event>(result).run();
-                } catch (Exception e) {
-                    log.error("处理失败", e);
+            if(classes != null)
+                for(Class<?> tmp : classes) {
+                    try {
+                        EventListener<T> listener = Lang.newInstance(tmp);
+                        Event result = listener.handleEvent(e);
+                        if(result != null) new EventHandler<Event>(result).run();
+                    } catch (Exception e) {
+                        log.error("处理失败", e);
+                    }
                 }
-            }
         }
     }
 }
