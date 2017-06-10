@@ -5,10 +5,6 @@ public class Content {
     private int type;
     private String data;
     private String desc;
-    /**
-     * 群聊里的来源用户
-     */
-    private User user;
     private Object detail;
     
     /**
@@ -43,12 +39,6 @@ public class Content {
     }
     public void setData(String data) {
         this.data = data;
-    }
-    public User getUser() {
-        return user;
-    }
-    public void setUser(User user) {
-        this.user = user;
     }
     public Object getDetail() {
         return detail;
