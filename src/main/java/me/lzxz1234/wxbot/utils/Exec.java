@@ -1,36 +1,29 @@
 package me.lzxz1234.wxbot.utils;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 public class Exec {
 
-    private static final int SIZE = 400;
-    private static final Worker[] threads = new Worker[SIZE + 1];
-    private static final ErrorListener listener;
-    
-    static {
-        
-        listener = new DefaultErrorListener();
-        for(int i = 0; i <= SIZE; i ++) {
-            threads[i] = new Worker(i);
-            threads[i].start();
-        }
-    }
+    private static final ErrorListener listener = new DefaultErrorListener();
+    private static final Map<String, Worker> workers = new ConcurrentHashMap<String, Worker>();
     
     /**
-     * 提交任务，可以保证相当 hashKey 传入的任务按严格时间顺序执行
-     * @param hashKey
+     * 提交任务，可以保证相当 threadId 传入的任务按严格时间顺序执行
+     * @param threadId
      * @param run
      */
-    public static void submit(String hashKey, Runnable run) {
+    public static void submit(String threadId, Runnable run) {
         
-        if(StringUtils.isEmpty(hashKey)) 
-            threads[SIZE].submit(hashKey, run);
-        else
-            threads[(int)(Math.abs(hashKey.hashCode()) % SIZE)].submit(hashKey, run);
+        if(StringUtils.isEmpty(threadId)) threadId = "";
+        if(!workers.containsKey(threadId))
+            workers.put(threadId, new Worker(threadId));
+        workers.get(threadId).submit(threadId, run);
     }
     
     /**
@@ -56,12 +49,12 @@ public class Exec {
     private static final class Worker extends Thread {
         
         private static final String GLOBAL_NAME_PREFIX = "Exec-Worker-";
-        private final String MY_NAME_PREFIX;
+        private final String id;
         private LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
         
-        public Worker(int id) {
+        public Worker(String id) {
             
-            this.MY_NAME_PREFIX = GLOBAL_NAME_PREFIX + id + "-";
+            this.id = id;
         }
         
         @Override
@@ -70,7 +63,12 @@ public class Exec {
             while(true) {
                 Runnable target = take();
                 try {
-                    if(target != null) target.run();
+                    if(target != null) { 
+                        target.run();
+                    } else {
+                        Exec.workers.remove(id);
+                        return;
+                    }
                 } catch (Exception e) {
                     listener.onEvent(e);
                 }
@@ -78,14 +76,15 @@ public class Exec {
         }
         public void submit(String taskName, Runnable run) {
             this.queue.add(run);
-            this.setName(this.MY_NAME_PREFIX + taskName);
+            this.setName(GLOBAL_NAME_PREFIX + id + "-" + taskName);
         }
         private Runnable take() {
+            
             while(true) {
                 try {
-                    return queue.take();
-                } catch (Exception e) {
-                    continue;
+                    return queue.poll(300, TimeUnit.SECONDS);
+                } catch(InterruptedException e1) {
+                    // pass
                 }
             }
         }
