@@ -25,6 +25,7 @@ import me.lzxz1234.wxbot.event.message.MessageEvent;
 import me.lzxz1234.wxbot.event.message.PublicMessageEvent;
 import me.lzxz1234.wxbot.event.message.SelfMessageEvent;
 import me.lzxz1234.wxbot.event.message.SpecialMessageEvent;
+import me.lzxz1234.wxbot.event.message.SystemMessageEvent;
 import me.lzxz1234.wxbot.event.message.UserAddEvent;
 import me.lzxz1234.wxbot.event.system.HandleMsgEvent;
 import me.lzxz1234.wxbot.task.EventListener;
@@ -53,6 +54,10 @@ public class HandleMsg extends EventListener<HandleMsgEvent> {
                 
                 event = new UserAddEvent(context.getUuid());
                 ((UserAddEvent)event).setRecommendInfo(msg.getObject("RecommendInfo", RecommendInfo.class));
+            } else if(msg.getIntValue("MsgType") == 10000) {
+                
+                event = new SystemMessageEvent(context.getUuid());
+                event.getUser().setName("system");
             } else if(fromUid.equals(context.getMyAccount().getUserName())) { // Self
                 
                 event = new SelfMessageEvent(context.getUuid());
