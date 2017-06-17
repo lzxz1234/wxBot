@@ -18,7 +18,6 @@ import org.apache.http.entity.StringEntity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
-import me.lzxz1234.wxbot.WXUtils;
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
 import me.lzxz1234.wxbot.event.system.GetContactEvent;
@@ -95,11 +94,10 @@ public class ProcMsg extends EventListener<ProcMsgEvent> {
             log.error("执行异常", ex);
         } finally {
             if(resp != null) resp.close();
-            checkTime = System.currentTimeMillis() - checkTime;
-            if(checkTime < 800) Lang.sleep(1000 - checkTime);
-            WXUtils.submit(new ProcMsgEvent(e.getUuid()));
         }
-        return null;
+        checkTime = System.currentTimeMillis() - checkTime;
+        if(checkTime < 800) Lang.sleep(1000 - checkTime);
+        return new ProcMsgEvent(e.getUuid());
     }
 
     private void testSyncCheck(WXHttpClientContext context) throws Exception {

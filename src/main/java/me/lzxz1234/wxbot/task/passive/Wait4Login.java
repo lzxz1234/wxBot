@@ -9,7 +9,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 
-import me.lzxz1234.wxbot.WXUtils;
 import me.lzxz1234.wxbot.context.WXHttpClientContext;
 import me.lzxz1234.wxbot.event.Event;
 import me.lzxz1234.wxbot.event.system.LoginEvent;
@@ -62,7 +61,7 @@ public class Wait4Login extends EventListener<Wait4LoginEvent> {
                 } else if(e.getRetry() > 0) {
                     log.debug(uuid + " 登录失败待重试，状态码：" + code);
                     Lang.sleep(1000);
-                    WXUtils.submit(new Wait4LoginEvent("1", uuid, e.getRetry() - 1));
+                    return new Wait4LoginEvent("1", uuid, e.getRetry() - 1);
                 } else {
                     log.debug(uuid + " 登录失败");
                     context.setStatus("timeout");

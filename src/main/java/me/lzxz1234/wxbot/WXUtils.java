@@ -83,6 +83,11 @@ public class WXUtils {
         System.setProperty ("jsse.enableSNIExtension", "false");
     }
     
+    /**
+     * 全局注册事件监听，支持父类监听
+     * @param event
+     * @param listener
+     */
     public static synchronized <T extends Event> void registEventListener(Class<T> event, Class<? extends EventListener<T>> listener) {
         
         if(!map.contains(event)) map.put(event, new Class<?>[0]);
@@ -92,6 +97,12 @@ public class WXUtils {
         log.info(String.format("监听注册 %s ==> %s", event, listener));
     }
 
+    /**
+     * 开始登录会话，生成 UUID，并将传入的参数作为其它信息保存到 context 中
+     * @param otherInfo
+     * @return
+     * @throws Exception
+     */
     public static String genUUID(Map<String, Object> otherInfo) throws Exception {
         
         // appid=wx782c26e4c19acffb 为 Web微信
@@ -114,7 +125,7 @@ public class WXUtils {
                 String code = matcher.group(1);
                 String uuid = matcher.group(2);
                 if("200".equals(code)) {
-                    WXUtils.submit(new NewEvent(uuid, otherInfo));
+                    new Thread(new EventHandler<Event>(new NewEvent(uuid, otherInfo)), uuid).start();
                     return uuid;
                 }
             }
@@ -125,6 +136,12 @@ public class WXUtils {
         return null;
     }
     
+    /**
+     * 查询会话
+     * @param uuid
+     * @return
+     * @throws Exception
+     */
     public static WXHttpClientContext getContext(String uuid) throws Exception {
         
         WXHttpClientContext result = store.getContext(uuid);
@@ -136,21 +153,40 @@ public class WXUtils {
         return result;
     }
     
+    /**
+     * 保存会话
+     * @param context
+     */
     public static void saveContext(WXHttpClientContext context) {
         
         store.saveContext(context);
     }
     
+    /**
+     * 查询联系人信息
+     * @param uuid
+     * @return
+     */
     public static WXContactInfo getContact(String uuid) {
         
         return store.getContact(uuid);
     }
     
+    /**
+     * 保存联系人信息
+     * @param contact
+     */
     public static void saveContact(WXContactInfo contact) {
         
         store.saveContact(contact);
     }
     
+    /**
+     * 生成二维码
+     * @param uuid
+     * @param stream
+     * @throws Exception
+     */
     public static void genQrCode(String uuid, OutputStream stream) throws Exception {
         
         String content = "https://login.weixin.qq.com/l/" + uuid;
@@ -159,11 +195,15 @@ public class WXUtils {
         MatrixToImageWriter.writeToStream(bitMatrix, "png", stream);
     }
     
+    /**
+     * 提交任务
+     * @param task
+     */
     public static void submit(Event task) {
         
         try {
             if(task != null) 
-                Exec.submit(task.getUuid(), new EventHandler<Event>(task));;
+                Exec.submit(task.getUuid(), new EventHandler<Event>(task));
         } catch (Exception e) {
             log.error("入队失败", e);
             submit(task);
@@ -177,27 +217,25 @@ public class WXUtils {
             this.e = e;
         }
         @Override
+        @SuppressWarnings("unchecked")
         public void run() {
             
-            Class<?> cur = e.getClass();
-            do {
-                this.runAll(map.get(cur));
-                cur = cur.getSuperclass();
-            } while(!cur.equals(Object.class));
-        }
-        
-        private void runAll(Class<?>[] classes) {
-            
-            if(classes != null)
-                for(Class<?> tmp : classes) {
-                    try {
-                        EventListener<T> listener = Lang.newInstance(tmp);
-                        Event result = listener.handleEvent(e);
-                        if(result != null) new EventHandler<Event>(result).run();
-                    } catch (Exception e) {
-                        log.error("处理失败", e);
-                    }
-                }
+            while(e != null) {
+                Class<?> cur = e.getClass();
+                do {
+                    Class<?>[] classes = map.get(cur);
+                    if(classes != null)
+                        for(Class<?> tmp : classes) {
+                            try {
+                                EventListener<T> listener = Lang.newInstance(tmp);
+                                e = (T) listener.handleEvent(e);
+                            } catch (Exception e) {
+                                log.error("处理失败", e);
+                            }
+                        }
+                    cur = cur.getSuperclass();
+                } while(!cur.equals(Object.class));
+            }
         }
     }
 }

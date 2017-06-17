@@ -14,7 +14,7 @@ public class Exec {
     private static final Map<String, Worker> workers = new ConcurrentHashMap<String, Worker>();
     
     /**
-     * 提交任务，可以保证相当 threadId 传入的任务按严格时间顺序执行
+     * 提交任务，可以保证相同 threadId 传入的任务按严格时间顺序执行
      * @param threadId
      * @param run
      */
