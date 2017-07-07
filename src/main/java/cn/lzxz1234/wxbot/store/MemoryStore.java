@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import cn.lzxz1234.wxbot.context.WXContactInfo;
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 
-public class MemoryStore extends Store {
+public class MemoryStore implements Store {
 
     private Map<String, WXHttpClientContext> contexts = new ConcurrentHashMap<>();
     private Map<String, WXContactInfo> contacts = new ConcurrentHashMap<>();

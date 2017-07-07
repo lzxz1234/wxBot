@@ -60,9 +60,9 @@ import cn.lzxz1234.wxbot.utils.Lang;
 
 public class WXUtils {
 
-    protected static final Logger log = Logger.getLogger(WXUtils.class);
-    protected static final ConcurrentHashMap<Class<?>, Class<?>[]> map = new ConcurrentHashMap<Class<?>, Class<?>[]>();
-    protected static Store store = new MemoryStore();
+    private static final Logger log = Logger.getLogger(WXUtils.class);
+    private static final ConcurrentHashMap<Class<?>, Class<?>[]> map = new ConcurrentHashMap<Class<?>, Class<?>[]>();
+    private static Store store = new MemoryStore();
     
     static {
         
@@ -81,6 +81,11 @@ public class WXUtils {
         registEventListener(BatchEvent.class, Batch.class);
         
         System.setProperty ("jsse.enableSNIExtension", "false");
+    }
+    
+    public static void setStore(Store store) {
+        
+        WXUtils.store = store;
     }
     
     /**
