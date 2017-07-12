@@ -26,6 +26,7 @@ public class HttpUtils {
     
     public static byte[] download(String urlLocation) {
         
+        if(StringUtils.isEmpty(urlLocation)) return new byte[0];
         HttpURLConnection conn = null;
         InputStream is = null;
         try {

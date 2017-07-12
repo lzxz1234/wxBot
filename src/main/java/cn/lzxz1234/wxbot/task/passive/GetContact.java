@@ -15,7 +15,6 @@ import org.apache.http.entity.StringEntity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
 import cn.lzxz1234.wxbot.WXUtils;
 import cn.lzxz1234.wxbot.context.WXContactInfo;
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
@@ -34,7 +33,7 @@ public class GetContact extends EventListener<GetContactEvent> {
         contact.setMemberList(this.getMemberist(context));
         context.setEncryChatRoomIds(new JSONObject());
         contact.setGroupMembers(this.getGroupMembers(context, contact));
-        WXUtils.saveContact(contact);
+        WXUtils.getStore().saveContact(contact);
         return null;
     }
     

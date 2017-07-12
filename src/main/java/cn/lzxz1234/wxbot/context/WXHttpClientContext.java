@@ -1,26 +1,41 @@
 package cn.lzxz1234.wxbot.context;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.cookie.ClientCookie;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
-
 import cn.lzxz1234.wxbot.vo.Account;
 import cn.lzxz1234.wxbot.vo.BaseRequest;
 import cn.lzxz1234.wxbot.vo.Pair;
 import cn.lzxz1234.wxbot.vo.SyncKey;
 
-public class WXHttpClientContext extends BasicCookieStore {
+public class WXHttpClientContext extends BasicCookieStore implements Serializable {
     
     private static final long serialVersionUID = 1L;
+    private static final ThreadLocal<CloseableHttpClient> tl = new ThreadLocal<CloseableHttpClient>() {
+        @Override
+        protected CloseableHttpClient initialValue() {
+            return HttpClients.custom()
+                    .setRetryHandler(new DefaultHttpRequestRetryHandler(10, false))
+                    .build();
+        }
+    };
+    
     private String status;
     private String uuid;
     private String baseHost;
@@ -35,6 +50,26 @@ public class WXHttpClientContext extends BasicCookieStore {
     private Date updateTime;
     private Map<String, Object> otherInfo;
     
+    public CloseableHttpResponse execute(HttpUriRequest request) 
+            throws Exception {
+        
+        HttpClientContext context = new HttpClientContext();
+        context.setCookieStore(this);
+        return tl.get().execute(request, context);
+    }
+    
+    public void close() throws Exception {
+        
+        tl.get().close();
+        tl.remove();
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        
+        this.close();
+    }
+
     public Map<String, Object> getOtherInfo() {
         return otherInfo;
     }

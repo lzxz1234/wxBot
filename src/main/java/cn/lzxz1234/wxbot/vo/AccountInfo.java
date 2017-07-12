@@ -1,7 +1,10 @@
 package cn.lzxz1234.wxbot.vo;
 
-public class AccountInfo {
+import java.io.Serializable;
 
+public class AccountInfo implements Serializable {
+
+    private static final long serialVersionUID = 6223770689593948753L;
     private GroupMember groupMember = new GroupMember();
     private NormalMember normalMember = new NormalMember();
     

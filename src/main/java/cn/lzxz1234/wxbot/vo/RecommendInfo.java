@@ -1,9 +1,12 @@
 package cn.lzxz1234.wxbot.vo;
 
+import java.io.Serializable;
+
 import com.alibaba.fastjson.annotation.JSONField;
 
-public class RecommendInfo {
+public class RecommendInfo implements Serializable {
 
+    private static final long serialVersionUID = -5672879075657010310L;
     @JSONField(name="NickName") private String nickName;
     @JSONField(name="Province") private String province;
     @JSONField(name="City") private String city;

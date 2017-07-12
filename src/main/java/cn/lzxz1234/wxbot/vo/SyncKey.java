@@ -1,11 +1,13 @@
 package cn.lzxz1234.wxbot.vo;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
-public class SyncKey {
+public class SyncKey implements Serializable {
 
+    private static final long serialVersionUID = 425487361912635937L;
     @JSONField(name="List") private List<Pair> list;
     @JSONField(name="Count") private int count;
     

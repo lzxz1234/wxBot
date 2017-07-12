@@ -1,5 +1,6 @@
 package cn.lzxz1234.wxbot.context;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,7 +15,9 @@ import cn.lzxz1234.wxbot.vo.GroupMember;
 import cn.lzxz1234.wxbot.vo.Member;
 import cn.lzxz1234.wxbot.vo.NormalMember;
 
-public class WXContactInfo {
+public class WXContactInfo implements Serializable {
+
+    private static final long serialVersionUID = 2488496462459062123L;
 
     private static final Set<String> SPECIAL_USERS = new HashSet<String>(Arrays.asList(
             "newsapp", "fmessage", "filehelper", "weibo", "qqmail",

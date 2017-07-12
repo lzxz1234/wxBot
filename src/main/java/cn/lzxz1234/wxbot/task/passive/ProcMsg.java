@@ -17,7 +17,7 @@ import org.apache.http.entity.StringEntity;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
+import cn.lzxz1234.wxbot.WXUtils;
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.Event;
 import cn.lzxz1234.wxbot.event.system.GetContactEvent;
@@ -71,18 +71,18 @@ public class ProcMsg extends EventListener<ProcMsgEvent> {
                         JSONObject dict = this.sync(context);
                         if(dict != null) {
                             if("2".equals(selector)) { // 有新消息 
-                                return new HandleMsgEvent(uuid, dict);
+                                WXUtils.submit(new HandleMsgEvent(uuid, dict));
                             } else if("3".equals(selector)) { // 未知
-                                return new HandleMsgEvent(uuid, dict);
+                                WXUtils.submit(new HandleMsgEvent(uuid, dict));
                             } else if("4".equals(selector)) { // 通讯录更新
-                                return new GetContactEvent(uuid);
+                                WXUtils.submit(new GetContactEvent(uuid));
                             } else if("6".equals(selector)) { // 可能是红包
-                                return new HandleMsgEvent(uuid, dict);
+                                WXUtils.submit(new HandleMsgEvent(uuid, dict));
                             } else if("7".equals(selector)) { // 手机上操作了微信 
-                                return new HandleMsgEvent(uuid, dict);
+                                WXUtils.submit(new HandleMsgEvent(uuid, dict));
                             } else {
                                 log.debug(e.getUuid() + " sync_check: " + retcode + "，" + selector);
-                                return new HandleMsgEvent(uuid, dict);
+                                WXUtils.submit(new HandleMsgEvent(uuid, dict));
                             }
                         }
                     }

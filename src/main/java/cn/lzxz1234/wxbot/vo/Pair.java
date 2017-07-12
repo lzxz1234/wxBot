@@ -1,9 +1,12 @@
 package cn.lzxz1234.wxbot.vo;
 
+import java.io.Serializable;
+
 import com.alibaba.fastjson.annotation.JSONField;
 
-public class Pair {
+public class Pair implements Serializable {
 
+    private static final long serialVersionUID = -8596267872040063811L;
     @JSONField(name="Key") private String key;
     @JSONField(name="Val")private String val;
     

@@ -1,9 +1,12 @@
 package cn.lzxz1234.wxbot.vo;
 
+import java.io.Serializable;
+
 import com.alibaba.fastjson.JSONObject;
 
-public class Member {
+public class Member implements Serializable {
 
+    private static final long serialVersionUID = 7076092920477086118L;
     private String type;
     private JSONObject info;
     private String groupId;

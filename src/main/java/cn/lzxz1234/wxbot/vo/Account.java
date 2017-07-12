@@ -1,9 +1,12 @@
 package cn.lzxz1234.wxbot.vo;
 
+import java.io.Serializable;
+
 import com.alibaba.fastjson.annotation.JSONField;
 
-public class Account {
+public class Account implements Serializable {
 
+    private static final long serialVersionUID = -8484614277609913861L;
     @JSONField(name="Uin") private String uin;
     @JSONField(name="UserName") private String userName;
     @JSONField(name="NickName") private String nickName;

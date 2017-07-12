@@ -1,11 +1,11 @@
 package cn.lzxz1234.wxbot.event;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import java.util.Arrays;
+import java.util.List;
 
 public class BatchEvent extends Event {
 
-    private String realEvents;
+    private List<Event> realEvents;
     public BatchEvent() {
         
     }
@@ -13,15 +13,16 @@ public class BatchEvent extends Event {
     public BatchEvent(String uuid, Event... realEvents) {
         
         super(uuid);
-        this.realEvents = JSON.toJSONString(realEvents, SerializerFeature.WriteClassName);
+        this.realEvents = Arrays.asList(realEvents);
     }
 
-    public String getRealEvents() {
+    public List<Event> getRealEvents() {
         return realEvents;
     }
 
-    public void setRealEvents(String realEvents) {
+    public void setRealEvents(List<Event> realEvents) {
         this.realEvents = realEvents;
     }
+
     
 }

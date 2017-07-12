@@ -1,9 +1,12 @@
 package cn.lzxz1234.wxbot.vo;
 
+import java.io.Serializable;
+
 import com.alibaba.fastjson.annotation.JSONField;
 
-public class BaseRequest {
+public class BaseRequest implements Serializable {
 
+    private static final long serialVersionUID = 5461672712073617354L;
     @JSONField(name="DeviceID") private String deviceId;
     @JSONField(name="Skey") private String skey;
     @JSONField(name="Uin") private String uin;

@@ -5,19 +5,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
 import cn.lzxz1234.wxbot.WXUtils;
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.Event;
@@ -25,15 +19,6 @@ import cn.lzxz1234.wxbot.vo.Name;
 
 public abstract class EventListener<T extends Event> {
 
-    private static ThreadLocal<CloseableHttpClient> tl  = new ThreadLocal<CloseableHttpClient>() {
-        @Override
-        protected CloseableHttpClient initialValue() {
-            
-            return HttpClients.custom()
-                    .setRetryHandler(new DefaultHttpRequestRetryHandler(10, false))
-                    .build();
-        }
-    };
     protected Logger log = Logger.getLogger(this.getClass());
 
     protected abstract Event handleEnvent(T e, WXHttpClientContext context) throws Exception;
@@ -42,25 +27,28 @@ public abstract class EventListener<T extends Event> {
         
         WXHttpClientContext context = null;
         try {
-            context = WXUtils.getContext(e.getUuid());
+            context = WXUtils.getStore().getContext(e.getUuid());
+            if(context == null) {
+                context = new WXHttpClientContext();
+                context.setUuid(e.getUuid());
+                context.setStatus("new");
+                WXUtils.getStore().saveContext(context);
+            }
             return this.handleEnvent(e, context);
         } catch(Exception ex) {
             log.error(e.getUuid() + " 执行失败 " + JSON.toJSONString(e), ex);
         } finally {
-            tl.get().close();
-            tl.remove();
             context.setUpdateTime(new Date());
-            WXUtils.saveContext(context);
+            context.close();
+            WXUtils.getStore().saveContext(context);
         }
         return null;
     }
     
-    public CloseableHttpResponse execute(HttpUriRequest request, CookieStore cookie) 
+    public CloseableHttpResponse execute(HttpUriRequest request, WXHttpClientContext cookie) 
             throws Exception {
         
-        HttpClientContext context = new HttpClientContext();
-        context.setCookieStore(cookie);
-        return tl.get().execute(request, context);
+        return cookie.execute(request);
     }
     
     public Name getContactName(WXHttpClientContext context, String uid) {

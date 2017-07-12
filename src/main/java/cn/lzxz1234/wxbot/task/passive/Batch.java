@@ -1,7 +1,5 @@
 package cn.lzxz1234.wxbot.task.passive;
 
-import com.alibaba.fastjson.JSON;
-
 import cn.lzxz1234.wxbot.WXUtils.EventHandler;
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.BatchEvent;
@@ -15,7 +13,7 @@ public class Batch extends EventListener<BatchEvent> {
             throws Exception {
         
         if(e.getRealEvents() != null)
-            for(Event each : JSON.parseArray(e.getRealEvents(), Event.class))
+            for(Event each : e.getRealEvents())
                 new EventHandler<Event>(each).run();
         return null;
     }

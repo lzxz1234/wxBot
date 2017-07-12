@@ -6,11 +6,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -83,7 +86,7 @@ public class WXUtils {
         System.setProperty ("jsse.enableSNIExtension", "false");
     }
     
-    public static void setStore(Store store) {
+    public static void changeStore(Store store) {
         
         WXUtils.store = store;
     }
@@ -142,29 +145,12 @@ public class WXUtils {
     }
     
     /**
-     * 查询会话
-     * @param uuid
+     * 获取文件存储
      * @return
-     * @throws Exception
      */
-    public static WXHttpClientContext getContext(String uuid) throws Exception {
+    public static Store getStore() {
         
-        WXHttpClientContext result = store.getContext(uuid);
-        if(result == null) {
-            result = new WXHttpClientContext();
-            result.setUuid(uuid);
-            store.saveContext(result);
-        }
-        return result;
-    }
-    
-    /**
-     * 保存会话
-     * @param context
-     */
-    public static void saveContext(WXHttpClientContext context) {
-        
-        store.saveContext(context);
+        return store;
     }
     
     /**
@@ -178,12 +164,39 @@ public class WXUtils {
     }
     
     /**
-     * 保存联系人信息
-     * @param contact
+     * 头像下载
+     * @param context
+     * @param uid
+     * @return
+     * @throws Exception
      */
-    public static void saveContact(WXContactInfo contact) {
+    public static byte[] getIcon(WXHttpClientContext context, String uid) throws Exception {
         
-        store.saveContact(contact);
+        return getIcon(context, uid, null);
+    }
+    
+    /**
+     * 头像下载
+     * @param context
+     * @param uid
+     * @param gid
+     * @return
+     * @throws Exception
+     */
+    public static byte[] getIcon(WXHttpClientContext context, String uid, String gid) throws Exception {
+        
+        CloseableHttpResponse resp = null;
+        try {
+            URIBuilder uri = new URIBuilder(context.getBaseUri() + "/webwxgeticon");
+            uri.addParameter("username", uid).addParameter("skey", context.getBaseRequest().getSkey());
+            if(StringUtils.isNotEmpty(gid)) uri.addParameter("chatroomid", gid);
+            
+            HttpGet get = new HttpGet(uri.build());
+            resp = context.execute(get);
+            return IOUtils.toByteArray(resp.getEntity().getContent());
+        } finally {
+            if(resp != null) resp.close();
+        }
     }
     
     /**
@@ -217,25 +230,28 @@ public class WXUtils {
     
     public static class EventHandler<T extends Event> implements Runnable {
         
-        private T e;
-        public EventHandler(T e) {
-            this.e = e;
+        private Queue<Event> queue = new LinkedBlockingQueue<Event>();
+        public EventHandler(Event e) {
+            this.queue.add(e);
         }
         @Override
-        @SuppressWarnings("unchecked")
         public void run() {
             
-            while(e != null) {
+            while(true) {
+                Event e = queue.poll();
+                if(e == null) break;
+                
                 Class<?> cur = e.getClass();
                 do {
                     Class<?>[] classes = map.get(cur);
                     if(classes != null)
                         for(Class<?> tmp : classes) {
                             try {
-                                EventListener<T> listener = Lang.newInstance(tmp);
-                                e = (T) listener.handleEvent(e);
-                            } catch (Exception e) {
-                                log.error("处理失败", e);
+                                EventListener<Event> listener = Lang.newInstance(tmp);
+                                Event nextE = listener.handleEvent(e);
+                                if(nextE != null) queue.add(nextE);
+                            } catch (Exception ex) {
+                                log.error("处理失败", ex);
                             }
                         }
                     cur = cur.getSuperclass();

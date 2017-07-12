@@ -1,7 +1,10 @@
 package cn.lzxz1234.wxbot.vo;
 
-public class Name {
+import java.io.Serializable;
 
+public class Name implements Serializable {
+
+    private static final long serialVersionUID = 8814633135972755042L;
     private String remarkName;
     private String nickName;
     private String displayName;

@@ -1,7 +1,10 @@
 package cn.lzxz1234.wxbot.vo;
 
-public class Info {
+import java.io.Serializable;
 
+public class Info implements Serializable {
+
+    private static final long serialVersionUID = -1265616329879588176L;
     private String type;
     private String value;
     

@@ -1,7 +1,10 @@
 package cn.lzxz1234.wxbot.vo;
 
-public class ShareData {
+import java.io.Serializable;
 
+public class ShareData implements Serializable {
+
+    private static final long serialVersionUID = -7403154710818584364L;
     private String type;
     private String title;
     private String desc;

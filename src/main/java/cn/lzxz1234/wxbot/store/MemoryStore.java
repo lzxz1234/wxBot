@@ -8,8 +8,8 @@ import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 
 public class MemoryStore implements Store {
 
-    private Map<String, WXHttpClientContext> contexts = new ConcurrentHashMap<>();
-    private Map<String, WXContactInfo> contacts = new ConcurrentHashMap<>();
+    private Map<String, WXHttpClientContext> contexts = new ConcurrentHashMap<String, WXHttpClientContext>();
+    private Map<String, WXContactInfo> contacts = new ConcurrentHashMap<String, WXContactInfo>();
     
     @Override
     public void saveContext(WXHttpClientContext context) {
