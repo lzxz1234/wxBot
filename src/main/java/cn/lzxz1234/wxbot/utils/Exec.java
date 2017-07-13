@@ -21,8 +21,10 @@ public class Exec {
     public static void submit(String threadId, Runnable run) {
         
         if(StringUtils.isEmpty(threadId)) threadId = "";
-        if(!workers.containsKey(threadId))
+        if(!workers.containsKey(threadId)) {
             workers.put(threadId, new Worker(threadId));
+            workers.get(threadId).start();
+        }
         workers.get(threadId).submit(threadId, run);
     }
     

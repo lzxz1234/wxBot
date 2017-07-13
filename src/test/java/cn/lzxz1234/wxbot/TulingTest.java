@@ -64,7 +64,7 @@ public class TulingTest extends EventListener<ContactMessageEvent> {
         
         JSONObject resp = JSON.parseObject(sendPost(post.toJSONString(), "http://www.tuling123.com/openapi/api"));
         if(resp.getInteger("code") == 100000) 
-            return new SendMsgByUidEvent(e.getUuid(), e.getUser().getId(), resp.getString("text"));
+            WXUtils.submit(new SendMsgByUidEvent(e.getUuid(), e.getUser().getId(), resp.getString("text")));
         else 
             System.out.println(resp);
         return null;
@@ -73,10 +73,11 @@ public class TulingTest extends EventListener<ContactMessageEvent> {
     @Test
     public void test() throws Exception {
         
+        WXUtils.registEventListener(ContactMessageEvent.class, TulingTest.class);
+        
         String uuid = WXUtils.genUUID(null);
         File temp = File.createTempFile(uuid, ".png");
         FileOutputStream os = new FileOutputStream(temp);
-        WXUtils.registEventListener(ContactMessageEvent.class, TulingTest.class);
         WXUtils.genQrCode(uuid, os);
         os.close();
         System.out.println(temp.getAbsolutePath());
