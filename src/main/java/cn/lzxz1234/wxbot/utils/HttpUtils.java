@@ -11,6 +11,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -32,6 +36,13 @@ public class HttpUtils {
         try {
             URL url = new URL(urlLocation);
             conn = (HttpURLConnection)url.openConnection();
+            if(conn instanceof HttpsURLConnection)
+                ((HttpsURLConnection)conn).setHostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String arg0, SSLSession arg1) {
+                        return true;
+                    }
+                });
             conn.setDoInput(true);
             conn.setDoOutput(false);
             conn.setUseCaches(false);

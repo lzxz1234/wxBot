@@ -19,19 +19,19 @@ public class SendMsg extends EventListener<SendMsgEvent> {
         if(StringUtils.isEmpty(userName)) return null;
         for(JSONObject contact : WXUtils.getContact(context.getUuid()).getContactList()) {
             if(contact.containsKey("RemarkName") && contact.getString("RemarkName").equals(userName))
-                return contact.getString("RemarkName");
+                return contact.getString("UserName");
             if(contact.containsKey("NickName") && contact.getString("NickName").equals(userName))
-                return contact.getString("NickName");
+                return contact.getString("UserName");
             if(contact.containsKey("DisplayName") && contact.getString("DisplayName").equals(userName))
-                return contact.getString("DisplayName");
+                return contact.getString("UserName");
         }
         for(JSONObject group : WXUtils.getContact(context.getUuid()).getGroupList()) {
             if(group.containsKey("RemarkName") && group.getString("RemarkName").equals(userName))
-                return group.getString("RemarkName");
+                return group.getString("UserName");
             if(group.containsKey("NickName") && group.getString("NickName").equals(userName))
-                return group.getString("NickName");
+                return group.getString("UserName");
             if(group.containsKey("DisplayName") && group.getString("DisplayName").equals(userName))
-                return group.getString("DisplayName");
+                return group.getString("UserName");
         }
         return null;
     }

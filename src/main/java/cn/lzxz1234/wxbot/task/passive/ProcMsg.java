@@ -64,8 +64,13 @@ public class ProcMsg extends EventListener<ProcMsgEvent> {
                 
                 if("1100".equals(retcode)) { // 从微信客户端上登出
                     context.setStatus("loginout");
+                    log.info(uuid + " 退出 " + 1100);
                 } else if("1101".equals(retcode)){ // 从其它设备上登录了网页微信
                     context.setStatus("loginout");
+                    log.info(uuid + " 退出 " + 1101);
+                } else if("1102".equals(retcode)) { // 不知道啥问题，反正就是退出登录了
+                    context.setStatus("loginout");
+                    log.info(uuid + " 退出 " + 1102);
                 } else if("0".equals(retcode)) {
                     if(!"0".equals(selector)) {
                         JSONObject dict = this.sync(context);
@@ -115,17 +120,22 @@ public class ProcMsg extends EventListener<ProcMsgEvent> {
                     .addParameter("_", String.valueOf(System.currentTimeMillis() / 1000))
                     .build();
             HttpGet get = new HttpGet(uri);
-            CloseableHttpResponse resp = this.execute(get, context);
+            CloseableHttpResponse resp = null;
             try {
+                resp = this.execute(get, context);
                 String data = IOUtils.toString(resp.getEntity().getContent(), "UTF-8");
                 Matcher matcher = pattern.matcher(data);
                 if(matcher.find() && "0".equals(matcher.group(1))) {
                     context.setSyncHost(host + context.getBaseHost());
                     log.debug(uuid + " 加载同步服务器：" + context.getSyncHost());
                     return;
+                } else {
+                    log.warn("测试服务器返回:" + data);
                 }
+            } catch (Exception e) {
+                log.warn("加载服务器失败:" + e.getMessage());
             } finally {
-                resp.close();
+                if(resp != null) resp.close();
             }
         }
     }

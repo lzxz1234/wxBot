@@ -5,6 +5,12 @@ import java.io.Serializable;
 public class Content implements Serializable {
 
     private static final long serialVersionUID = -7968713548292626071L;
+    /**
+     * 0 文本
+     * 1 坐标
+     * 3 图片
+     * 4 音频
+     */
     private int type;
     private String data;
     private String desc;

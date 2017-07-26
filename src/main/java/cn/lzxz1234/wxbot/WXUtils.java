@@ -21,16 +21,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-
 import cn.lzxz1234.wxbot.context.WXContactInfo;
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.BatchEvent;
 import cn.lzxz1234.wxbot.event.Event;
 import cn.lzxz1234.wxbot.event.active.ApplyUserAddEvent;
+import cn.lzxz1234.wxbot.event.active.SendImgMsgByUidEvent;
 import cn.lzxz1234.wxbot.event.active.SendMsgByUidEvent;
 import cn.lzxz1234.wxbot.event.active.SendMsgEvent;
 import cn.lzxz1234.wxbot.event.active.SetRemarkNameEvent;
@@ -42,10 +38,13 @@ import cn.lzxz1234.wxbot.event.system.NewEvent;
 import cn.lzxz1234.wxbot.event.system.ProcMsgEvent;
 import cn.lzxz1234.wxbot.event.system.StatusNotifyEvent;
 import cn.lzxz1234.wxbot.event.system.Wait4LoginEvent;
+import cn.lzxz1234.wxbot.ioc.BeanFactory;
+import cn.lzxz1234.wxbot.ioc.SimpleBeanFactory;
 import cn.lzxz1234.wxbot.store.MemoryStore;
 import cn.lzxz1234.wxbot.store.Store;
 import cn.lzxz1234.wxbot.task.EventListener;
 import cn.lzxz1234.wxbot.task.active.ApplyUserAdd;
+import cn.lzxz1234.wxbot.task.active.SendImgMsgByUid;
 import cn.lzxz1234.wxbot.task.active.SendMsg;
 import cn.lzxz1234.wxbot.task.active.SendMsgByUid;
 import cn.lzxz1234.wxbot.task.active.SetRemarkName;
@@ -59,13 +58,17 @@ import cn.lzxz1234.wxbot.task.passive.ProcMsg;
 import cn.lzxz1234.wxbot.task.passive.StatusNotify;
 import cn.lzxz1234.wxbot.task.passive.Wait4Login;
 import cn.lzxz1234.wxbot.utils.Exec;
-import cn.lzxz1234.wxbot.utils.Lang;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 public class WXUtils {
 
     private static final Logger log = Logger.getLogger(WXUtils.class);
     private static final ConcurrentHashMap<Class<?>, Class<?>[]> map = new ConcurrentHashMap<Class<?>, Class<?>[]>();
     private static Store store = new MemoryStore();
+    private static BeanFactory factory = new SimpleBeanFactory();
     
     static {
         
@@ -82,6 +85,7 @@ public class WXUtils {
         registEventListener(StatusNotifyEvent.class, StatusNotify.class);
         registEventListener(Wait4LoginEvent.class, Wait4Login.class);
         registEventListener(BatchEvent.class, Batch.class);
+        registEventListener(SendImgMsgByUidEvent.class, SendImgMsgByUid.class);
         
         System.setProperty ("jsse.enableSNIExtension", "false");
     }
@@ -89,6 +93,11 @@ public class WXUtils {
     public static void changeStore(Store store) {
         
         WXUtils.store = store;
+    }
+    
+    public static void changeBeanFactory(BeanFactory factory) {
+        
+        WXUtils.factory = factory;
     }
     
     /**
@@ -235,6 +244,7 @@ public class WXUtils {
             this.queue.add(e);
         }
         @Override
+        @SuppressWarnings("unchecked")
         public void run() {
             
             while(true) {
@@ -247,7 +257,7 @@ public class WXUtils {
                     if(classes != null)
                         for(Class<?> tmp : classes) {
                             try {
-                                EventListener<Event> listener = Lang.newInstance(tmp);
+                                EventListener<Event> listener = (EventListener<Event>) factory.getBean(tmp);
                                 Event nextE = listener.handleEvent(e);
                                 if(nextE != null) queue.add(nextE);
                             } catch (Exception ex) {

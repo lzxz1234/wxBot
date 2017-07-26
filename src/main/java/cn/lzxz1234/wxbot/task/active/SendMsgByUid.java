@@ -10,7 +10,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 
 import com.alibaba.fastjson.JSONObject;
-
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.Event;
 import cn.lzxz1234.wxbot.event.active.SendMsgByUidEvent;
@@ -43,12 +42,13 @@ public class SendMsgByUid extends EventListener<SendMsgByUidEvent> {
         HttpPost post = new HttpPost(uri);
         post.setEntity(new StringEntity(params.toJSONString(), "UTF-8"));
         post.setHeader("content-type", "application/json; charset=UTF-8");
-        CloseableHttpResponse resp = this.execute(post, context);
+        CloseableHttpResponse resp = null;
         try {
+            resp = this.execute(post, context);
             IOUtils.toString(resp.getEntity().getContent(), "UTF-8");
-            log.debug(uuid + " 发送消息 " + word + " 成功");
+            log.debug(uuid + " 发送消息 " + word + " 返回");
         } finally {
-            resp.close();
+            if(resp != null) resp.close();
         }
         return null;
     }

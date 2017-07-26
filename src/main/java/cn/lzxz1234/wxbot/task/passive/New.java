@@ -1,5 +1,7 @@
 package cn.lzxz1234.wxbot.task.passive;
 
+import java.util.HashMap;
+
 import org.apache.commons.lang.RandomStringUtils;
 
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
@@ -17,7 +19,7 @@ public class New extends EventListener<NewEvent> {
         
         String uuid = e.getUuid();
         context.setStatus("wait4login");
-        context.setOtherInfo(e.getOtherInfo());
+        context.setOtherInfo(e.getOtherInfo() == null ? new HashMap<String, Object>() : e.getOtherInfo());
         context.getBaseRequest().setDeviceId("e" + RandomStringUtils.randomNumeric(15));
         log.debug("启动微信进程：" + uuid + "，待扫码");
         return new Wait4LoginEvent("1", uuid, 10);

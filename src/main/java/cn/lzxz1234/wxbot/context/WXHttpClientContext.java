@@ -1,24 +1,26 @@
 package cn.lzxz1234.wxbot.context;
 
 import java.io.Serializable;
+import java.net.SocketTimeoutException;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.cookie.ClientCookie;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
+
 import cn.lzxz1234.wxbot.vo.Account;
 import cn.lzxz1234.wxbot.vo.BaseRequest;
 import cn.lzxz1234.wxbot.vo.Pair;
@@ -27,11 +29,14 @@ import cn.lzxz1234.wxbot.vo.SyncKey;
 public class WXHttpClientContext extends BasicCookieStore implements Serializable {
     
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(WXHttpClientContext.class);
     private static final ThreadLocal<CloseableHttpClient> tl = new ThreadLocal<CloseableHttpClient>() {
         @Override
         protected CloseableHttpClient initialValue() {
             return HttpClients.custom()
+                    .setUserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.3103.400 QQBrowser/9.6.11372.400")
                     .setRetryHandler(new DefaultHttpRequestRetryHandler(10, false))
+                    .setDefaultRequestConfig(RequestConfig.custom().setSocketTimeout(60000).setConnectTimeout(6000).build())
                     .build();
         }
     };
@@ -53,9 +58,15 @@ public class WXHttpClientContext extends BasicCookieStore implements Serializabl
     public CloseableHttpResponse execute(HttpUriRequest request) 
             throws Exception {
         
-        HttpClientContext context = new HttpClientContext();
-        context.setCookieStore(this);
-        return tl.get().execute(request, context);
+        long start = System.currentTimeMillis();
+        try {
+            HttpClientContext context = new HttpClientContext();
+            context.setCookieStore(this);
+            return tl.get().execute(request, context);
+        } catch (SocketTimeoutException timeout) {
+            log.warn("timeout: " + (System.currentTimeMillis() - start) / 1000.0 + "秒");
+            return this.execute(request);
+        }
     }
     
     public void close() throws Exception {
@@ -149,10 +160,6 @@ public class WXHttpClientContext extends BasicCookieStore implements Serializabl
     public void setMyAccount(Account myCount) {
         this.myAccount = myCount;
     }
-    public synchronized List<Cookie> getCookies() {
-        
-        return super.getCookies();
-    }
     public Date getLoginTime() {
         return loginTime;
     }
@@ -165,20 +172,13 @@ public class WXHttpClientContext extends BasicCookieStore implements Serializabl
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
-    public void setCookies(List<JSONObject> cookies) {
-
-        if(cookies != null)
-            for(JSONObject cookie : cookies) {
-
-                BasicClientCookie e = new BasicClientCookie(cookie.getString("name"), cookie.getString("value"));
-                e.setExpiryDate(new Date(System.currentTimeMillis() + 7 * 24 * 3600000));
-                e.setDomain(cookie.getString("domain"));
-                e.setPath(cookie.getString("path"));
-                e.setSecure(cookie.getBooleanValue("secure"));
-                e.setVersion(cookie.getIntValue("version"));
-                e.setAttribute(ClientCookie.DOMAIN_ATTR, "true");
-                this.addCookie(e);
-            }
+    public String getCookieValue(String name) {
+        
+        if(StringUtils.isNotEmpty(name))
+            for(Cookie each : this.getCookies()) 
+                if(each.getName().equals(name)) 
+                    return each.getValue();
+        return null;
     }
     public String toString() {
         
