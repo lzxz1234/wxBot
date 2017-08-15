@@ -42,6 +42,9 @@ public class ProcMsg extends EventListener<ProcMsgEvent> {
             
             if(StringUtils.isEmpty(context.getSyncHost()))
                 this.testSyncCheck(context);
+            // 获取不到同步服务器时出退出
+            if(StringUtils.isEmpty(context.getSyncHost())) return null;
+            
             context.setStatus("success");
             String uuid = e.getUuid();
             URI uri = new URIBuilder("https://" + context.getSyncHost() + "/cgi-bin/mmwebwx-bin/synccheck")

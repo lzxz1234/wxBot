@@ -1,11 +1,18 @@
 package cn.lzxz1234.wxbot.context;
 
+import java.io.InterruptedIOException;
 import java.io.Serializable;
+import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
+import javax.net.ssl.SSLException;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -15,7 +22,6 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -29,13 +35,12 @@ import cn.lzxz1234.wxbot.vo.SyncKey;
 public class WXHttpClientContext extends BasicCookieStore implements Serializable {
     
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(WXHttpClientContext.class);
     private static final ThreadLocal<CloseableHttpClient> tl = new ThreadLocal<CloseableHttpClient>() {
         @Override
         protected CloseableHttpClient initialValue() {
             return HttpClients.custom()
                     .setUserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.3103.400 QQBrowser/9.6.11372.400")
-                    .setRetryHandler(new DefaultHttpRequestRetryHandler(10, false))
+                    .setRetryHandler(new RequestRetryHandler())
                     .setDefaultRequestConfig(RequestConfig.custom().setSocketTimeout(60000).setConnectTimeout(6000).build())
                     .build();
         }
@@ -58,15 +63,9 @@ public class WXHttpClientContext extends BasicCookieStore implements Serializabl
     public CloseableHttpResponse execute(HttpUriRequest request) 
             throws Exception {
         
-        long start = System.currentTimeMillis();
-        try {
-            HttpClientContext context = new HttpClientContext();
-            context.setCookieStore(this);
-            return tl.get().execute(request, context);
-        } catch (SocketTimeoutException timeout) {
-            log.warn("timeout: " + (System.currentTimeMillis() - start) / 1000.0 + "秒");
-            return this.execute(request);
-        }
+        HttpClientContext context = new HttpClientContext();
+        context.setCookieStore(this);
+        return tl.get().execute(request, context);
     }
     
     public void close() throws Exception {
@@ -183,5 +182,20 @@ public class WXHttpClientContext extends BasicCookieStore implements Serializabl
     public String toString() {
         
         return JSON.toJSONString(this);
+    }
+    
+    public static class RequestRetryHandler extends DefaultHttpRequestRetryHandler {
+        
+        public RequestRetryHandler() {
+            
+            super(10, false, Arrays.asList(
+                InterruptedIOException.class,
+                UnknownHostException.class,
+                ConnectException.class,
+                SSLException.class, 
+                ClientProtocolException.class, 
+                SocketTimeoutException.class));
+        }
+        
     }
 }

@@ -13,6 +13,7 @@ import org.apache.http.client.utils.URIBuilder;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.BatchEvent;
 import cn.lzxz1234.wxbot.event.Event;
@@ -28,6 +29,7 @@ import cn.lzxz1234.wxbot.event.message.SystemMessageEvent;
 import cn.lzxz1234.wxbot.event.message.UserAddEvent;
 import cn.lzxz1234.wxbot.event.system.HandleMsgEvent;
 import cn.lzxz1234.wxbot.task.EventListener;
+import cn.lzxz1234.wxbot.utils.FIFOLinkedHashMap;
 import cn.lzxz1234.wxbot.utils.HtmlUtils;
 import cn.lzxz1234.wxbot.vo.Content;
 import cn.lzxz1234.wxbot.vo.Info;
@@ -38,6 +40,11 @@ import cn.lzxz1234.wxbot.vo.User;
 
 public class HandleMsg extends EventListener<HandleMsgEvent> {
 
+    /**
+     * 最近一万条消息排重
+     */
+    private static FIFOLinkedHashMap<String, String> map = new FIFOLinkedHashMap<String, String>(1000);
+    
     @Override
     public Event handleEnvent(HandleMsgEvent e, WXHttpClientContext context)
             throws Exception {
@@ -106,7 +113,8 @@ public class HandleMsg extends EventListener<HandleMsgEvent> {
             
             if(event instanceof ContentMessageEvent) 
                 ((ContentMessageEvent)event).setContent(this.extractMsgContent(context, msg));
-            result.add(event);
+            if(map.putIfAbsent(event.getMsgId(), event.getMsgId()) == null)
+                result.add(event);
         }
         return new BatchEvent(context.getUuid(), result.toArray(new Event[0]));
     }
