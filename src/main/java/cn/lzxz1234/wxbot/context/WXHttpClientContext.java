@@ -1,18 +1,12 @@
 package cn.lzxz1234.wxbot.context;
 
-import java.io.InterruptedIOException;
+import java.io.IOException;
 import java.io.Serializable;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
-import javax.net.ssl.SSLException;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -188,13 +182,7 @@ public class WXHttpClientContext extends BasicCookieStore implements Serializabl
         
         public RequestRetryHandler() {
             
-            super(10, false, Arrays.asList(
-                InterruptedIOException.class,
-                UnknownHostException.class,
-                ConnectException.class,
-                SSLException.class, 
-                ClientProtocolException.class, 
-                SocketTimeoutException.class));
+            super(10, false, new ArrayList<Class<? extends IOException>>());
         }
         
     }
