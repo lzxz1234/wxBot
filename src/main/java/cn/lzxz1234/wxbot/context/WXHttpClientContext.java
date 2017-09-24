@@ -20,7 +20,6 @@ import org.apache.http.impl.client.HttpClients;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
-
 import cn.lzxz1234.wxbot.vo.Account;
 import cn.lzxz1234.wxbot.vo.BaseRequest;
 import cn.lzxz1234.wxbot.vo.Pair;

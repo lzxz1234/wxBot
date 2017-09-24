@@ -1,7 +1,9 @@
 package cn.lzxz1234.wxbot.task.passive;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,7 +15,6 @@ import org.apache.http.client.utils.URIBuilder;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.BatchEvent;
 import cn.lzxz1234.wxbot.event.Event;
@@ -43,12 +44,14 @@ public class HandleMsg extends EventListener<HandleMsgEvent> {
     /**
      * 最近一万条消息排重
      */
-    private static FIFOLinkedHashMap<String, String> map = new FIFOLinkedHashMap<String, String>(1000);
+    private static Map<String, FIFOLinkedHashMap<String, String>> map = new HashMap<String, FIFOLinkedHashMap<String, String>>();
     
     @Override
     public Event handleEnvent(HandleMsgEvent e, WXHttpClientContext context)
             throws Exception {
         
+        if(!map.containsKey(context.getUuid()))
+            map.put(context.getUuid(), new FIFOLinkedHashMap<String, String>(1000));
         List<Event> result = new ArrayList<Event>();
         JSONArray msgList = e.getRawMsg().getJSONArray("AddMsgList");
         for(int i = 0; i < msgList.size(); i ++) {
@@ -113,7 +116,7 @@ public class HandleMsg extends EventListener<HandleMsgEvent> {
             
             if(event instanceof ContentMessageEvent) 
                 ((ContentMessageEvent)event).setContent(this.extractMsgContent(context, msg));
-            if(map.putIfAbsent(event.getMsgId(), event.getMsgId()) == null)
+            if(map.get(context.getUuid()).putIfAbsent(event.getMsgId(), event.getMsgId()) == null)
                 result.add(event);
         }
         return new BatchEvent(context.getUuid(), result.toArray(new Event[0]));

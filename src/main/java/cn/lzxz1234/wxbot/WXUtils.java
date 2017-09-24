@@ -21,11 +21,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-
 import cn.lzxz1234.wxbot.context.WXContactInfo;
 import cn.lzxz1234.wxbot.context.WXHttpClientContext;
 import cn.lzxz1234.wxbot.event.BatchEvent;
@@ -63,6 +58,10 @@ import cn.lzxz1234.wxbot.task.passive.ProcMsg;
 import cn.lzxz1234.wxbot.task.passive.StatusNotify;
 import cn.lzxz1234.wxbot.task.passive.Wait4Login;
 import cn.lzxz1234.wxbot.utils.Exec;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 public class WXUtils {
 
