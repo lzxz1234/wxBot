@@ -2,11 +2,11 @@
 
 Java 版网页微信接口，Web微信协议参考资料：
 
-[挖掘微信Web版通信的全过程](http://www.tanhao.me/talk/1466.html/)
+[littlecodersh/ItChat](https://github.com/littlecodersh/ItChat) 微信个人号接口、微信机器人及命令行微信，Command line talks through Wechat
 
-[微信协议简单调研笔记](http://www.blogjava.net/yongboy/archive/2015/11/05/410636.html)
+[Urinx/WeixinBot](https://github.com/Urinx/WeixinBot) 网页版微信API，包含终端版微信及微信机器人
 
-[qwx: WeChat Qt frontend 微信Qt前端](https://github.com/xiangzhai/qwx)
+[zixia/wechaty](https://github.com/zixia/wechaty) Wechaty is wechat for bot in Javascript(ES6). It's a Personal Account Robot Framework/Library.
 
 ### 调用示例参见 TulingTest.java
 
